@@ -61,7 +61,7 @@ def load_dictionary_files():
     """
     Loads:
       - symptom_Description.csv -> description_list
-      - symptom_severity.csv -> severityDictionary
+      - Symptom_severity.csv -> severityDictionary
       - symptom_precaution.csv -> precautionDictionary
     """
     # symptom_Description
@@ -73,7 +73,7 @@ def load_dictionary_files():
 
     # symptom_severity
     severityDictionary = {}
-    with open('symptom_severity.csv') as csv_file:
+    with open('Symptom_severity.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         for row in csv_reader:
             try:
