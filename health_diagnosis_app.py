@@ -466,13 +466,14 @@ def show_health_profile():
                                                               st.session_state.user_profile.get('name', ''))
         st.session_state.user_profile['age'] = st.number_input("Age", 0, 120,
                                                                st.session_state.user_profile.get('age', 30))
-        st.session_state.user_profile['gender'] = st.selectbox("Gender",
-                                                               ["Male", "Female", "Other"],
-                                                               index=["Male", "Female", "Other"].index(
-                                                                   st.session_state.user_profile.get('gender',
-                                                                                                     'Male')) if st.session_state.user_profile.get(
-                                                                   'gender') else 0
-                                                               )
+        gender_options = ["Male", "Female", "Other"]
+        current_gender = st.session_state.user_profile.get('gender', 'Male')
+        try:
+            gender_index = gender_options.index(current_gender) if current_gender in gender_options else 0
+        except ValueError:
+            gender_index = 0  # Default to first option if value not found
+
+        st.session_state.user_profile['gender'] = st.selectbox("Gender", gender_options, index=gender_index)
 
         st.subheader("Body Metrics")
         st.session_state.user_profile['height'] = st.number_input("Height (cm)", 0, 250,
