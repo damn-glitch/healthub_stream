@@ -101,7 +101,7 @@ if 'user_profile' not in st.session_state:
         'family_history': [],
         'lifestyle': {
             'exercise': 'Moderate',
-            'diet': 'Balanced',
+            'diet': 'Standard',
             'smoking': 'No',
             'alcohol': 'Occasional'
         },
@@ -299,7 +299,12 @@ def predict_disease(symptoms_exp):
 def get_disease_details(disease):
     details = {}
     details['description'] = description_dict.get(disease, "No description available")
-    details['precautions'] = precaution_dict.get(disease, ["No specific precautions listed"])
+
+    # Convert any non-string precautions to strings
+    precautions = precaution_dict.get(disease, ["No specific precautions listed"])
+    if precautions:
+        precautions = [str(p) if not isinstance(p, str) else p for p in precautions]
+    details['precautions'] = precautions
 
     # Add genetic information if available
     if disease in genetic_risk_dict:
@@ -531,39 +536,34 @@ def show_health_profile():
                                                                                   'exercise') else 2
                                                                               )
 
-        st.session_state.user_profile['lifestyle']['diet'] = st.selectbox("Diet Type",
-                                                                          ["Standard", "Vegetarian", "Vegan", "Keto",
-                                                                           "Paleo", "Mediterranean", "Other"],
-                                                                          index=["Standard", "Vegetarian", "Vegan",
-                                                                                 "Keto", "Paleo", "Mediterranean",
-                                                                                 "Other"].index(
-                                                                              st.session_state.user_profile.get(
-                                                                                  'lifestyle', {}).get('diet',
-                                                                                                       'Standard')) if st.session_state.user_profile.get(
-                                                                              'lifestyle', {}).get('diet') else 0
-                                                                          )
+        diet_options = ["Standard", "Vegetarian", "Vegan", "Keto", "Paleo", "Mediterranean", "Other"]
+        current_diet = st.session_state.user_profile.get('lifestyle', {}).get('diet', 'Standard')
+        try:
+            diet_index = diet_options.index(current_diet) if current_diet in diet_options else 0
+        except (ValueError, TypeError):
+            diet_index = 0  # Default to Standard if value not found
 
-        st.session_state.user_profile['lifestyle']['smoking'] = st.selectbox("Smoking",
-                                                                             ["No", "Occasionally", "Regularly",
-                                                                              "Former smoker"],
-                                                                             index=["No", "Occasionally", "Regularly",
-                                                                                    "Former smoker"].index(
-                                                                                 st.session_state.user_profile.get(
-                                                                                     'lifestyle', {}).get('smoking',
-                                                                                                          'No')) if st.session_state.user_profile.get(
-                                                                                 'lifestyle', {}).get('smoking') else 0
-                                                                             )
+        st.session_state.user_profile['lifestyle']['diet'] = st.selectbox("Diet Type", diet_options, index=diet_index)
 
-        st.session_state.user_profile['lifestyle']['alcohol'] = st.selectbox("Alcohol Consumption",
-                                                                             ["None", "Occasional", "Moderate",
-                                                                              "Regular"],
-                                                                             index=["None", "Occasional", "Moderate",
-                                                                                    "Regular"].index(
-                                                                                 st.session_state.user_profile.get(
-                                                                                     'lifestyle', {}).get('alcohol',
-                                                                                                          'Occasional')) if st.session_state.user_profile.get(
-                                                                                 'lifestyle', {}).get('alcohol') else 1
-                                                                             )
+        smoking_options = ["No", "Occasionally", "Regularly", "Former smoker"]
+        current_smoking = st.session_state.user_profile.get('lifestyle', {}).get('smoking', 'No')
+        try:
+            smoking_index = smoking_options.index(current_smoking) if current_smoking in smoking_options else 0
+        except (ValueError, TypeError):
+            smoking_index = 0
+
+        st.session_state.user_profile['lifestyle']['smoking'] = st.selectbox("Smoking", smoking_options,
+                                                                             index=smoking_index)
+
+        alcohol_options = ["None", "Occasional", "Moderate", "Regular"]
+        current_alcohol = st.session_state.user_profile.get('lifestyle', {}).get('alcohol', 'Occasional')
+        try:
+            alcohol_index = alcohol_options.index(current_alcohol) if current_alcohol in alcohol_options else 1
+        except (ValueError, TypeError):
+            alcohol_index = 1
+
+        st.session_state.user_profile['lifestyle']['alcohol'] = st.selectbox("Alcohol Consumption", alcohol_options,
+                                                                             index=alcohol_index)
 
     if st.button("Save Profile"):
         if not st.session_state.user_profile['name']:
@@ -701,7 +701,7 @@ def show_symptom_analysis():
 
                         st.write("**Precautions:**")
                         for i, precaution in enumerate(details['precautions']):
-                            if precaution and precaution.strip():
+                            if precaution and isinstance(precaution, str) and precaution.strip():
                                 st.write(f"- {precaution}")
 
                         # Show genetic information if available
